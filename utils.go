@@ -2,55 +2,33 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
 
-func Sum(channel chan float64, chunks []string) {
+func processFiles(rows []string) Result {
 	sum := float64(0)
-	for _, chunk := range chunks {
-		val := strings.Split(chunk, ";")
+	maxVal := math.Inf(-1)
+	minVal := math.Inf(1)
+
+	for _, row := range rows {
+		val := strings.Split(row, ";")
 		parseVal, err := strconv.ParseFloat(val[1], 64)
 		if err != nil {
 			fmt.Println(err.Error())
 			panic("sum error")
 		}
+		minVal = math.Min(minVal, parseVal)
+		maxVal = math.Max(maxVal, parseVal)
 		sum += parseVal
+
 	}
 
-	channel <- sum
-}
-
-func Min(channel chan float64, chunks []string, minVal float64) {
-	min := minVal
-	for _, chunk := range chunks {
-		val := strings.Split(chunk, ";")
-		parseVal, err := strconv.ParseFloat(val[1], 64)
-		if err != nil {
-			fmt.Println(err.Error())
-			panic("min error")
-		}
-		if min < parseVal {
-			min = parseVal
-		}
+	return Result{
+		sum:   sum,
+		min:   minVal,
+		max:   maxVal,
+		count: len(rows),
 	}
-
-	channel <- min
-}
-
-func Max(channel chan float64, chunks []string, maxVal float64) {
-	max := maxVal
-	for _, chunk := range chunks {
-		val := strings.Split(chunk, ";")
-		parseVal, err := strconv.ParseFloat(val[1], 64)
-		if err != nil {
-			fmt.Println(err.Error())
-			panic("max error")
-		}
-		if max > parseVal {
-			max = parseVal
-		}
-	}
-
-	channel <- max
 }
